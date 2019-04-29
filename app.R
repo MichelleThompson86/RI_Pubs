@@ -3,7 +3,7 @@ library(DT)
 library(shiny)
 library(ggplot2)
 
-data = read.csv("C:/Users/mthompson/Dropbox/MishiT/R/RI_Pubs/RI_Pubs.csv")
+data = read.csv("RI_Pubs.csv")
 
 
 # Define UI for application that draws a histogram
