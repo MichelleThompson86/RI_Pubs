@@ -21,7 +21,7 @@ ui <- fluidPage(
      # Button
     # downloadButton("downloadData", "Download"), 
      
-     plotOutput("distPlot")), 
+     plotOutput("distPlot"), width = 6), 
 
 # Create a new Row in the UI for selectInputs
      fluidRow(     
@@ -81,7 +81,8 @@ output$distPlot <- renderPlot({
         axis.title.x=element_text(size = 16))+
       theme(
         legend.title=element_text(size=18),
-        legend.text=element_text(size=14)
+        legend.text=element_text(size=14), 
+        legend.position ="bottom"
       )+
       scale_x_continuous(breaks=2000:2019
       )+
