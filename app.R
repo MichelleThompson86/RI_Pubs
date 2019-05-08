@@ -3,7 +3,7 @@ library(shiny)
 library(ggplot2)
 library(rlang)
 library(tibble)
-library(viridis)
+
 
 data = read.csv("RI_Pubs_stats.csv")
 data1 = read.csv("RI_Pubs.csv")
