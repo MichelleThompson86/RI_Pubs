@@ -36,8 +36,8 @@ ui <- fluidPage(
     # Output: Tabset w/ plot, summary, and table ----
     tabsetPanel(type = "tabs",
                 tabPanel("Taxonomic group", plotOutput("plot1")),
-                tabPanel("RI", plotOutput("plot2")),
-                tabPanel("New species", plotOutput("plot3")))),
+                tabPanel("RI", plotOutput("plot2")))),
+                
   
   
   basicPage(
