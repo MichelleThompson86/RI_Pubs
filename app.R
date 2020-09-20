@@ -6,7 +6,7 @@ library(tibble)
 library(dplyr)
 
 
-data = read.csv("RI_Pubs_stats.csv")
+
 data1= read.csv("RI_Pubs.csv")
 data2 = read.csv("groups.csv")
 data3 = read.csv("RI.csv")
