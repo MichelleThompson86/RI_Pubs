@@ -6,7 +6,7 @@ library(tibble)
 library(dplyr)
 
 
-
+data= read.csv("RI_Pubs_stats.csv")
 data1= read.csv("RI_Pubs.csv")
 data2 = read.csv("groups.csv")
 data3 = read.csv("RI.csv")
@@ -110,11 +110,20 @@ server <-function(input, output) {
 
   
   #Group plot
+  
+  #modify data for groups fig
+  data.g <- data1 %>%
+    select(Social, Plants, Fish, Amphibians, Reptiles, Birds, Mammals, Other) %>%
+    summarise_all(sum, na.rm=TRUE) %>%
+    pivot_longer(cols=c(Social, Plants, Fish, Amphibians, Reptiles, Birds, Mammals, Other ),
+                 names_to = "Group", values_to = "Number")
+
+
   output$plot1 <-
     renderPlot({
-      data3$RI=as.factor(data3$RI)
-      legend_ord <- levels(with(data2, reorder(Group, -Number)))
-      ggplot(data = data2, aes(x=reorder(Group, -Number, sum), y = Number))   +
+      #data3$RI=as.factor(data3$RI)
+      legend_ord <- levels(with(data.g, reorder(Group, -Number)))
+      ggplot(data = data.g, aes(x=reorder(Group, -Number, sum), y = Number))   +
         geom_bar(stat = "identity",
                  fill="blue1", 
                  alpha = .9)+
