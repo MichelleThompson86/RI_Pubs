@@ -4,55 +4,103 @@ library(ggplot2)
 library(rlang)
 library(tibble)
 library(dplyr)
+library(tidyr)
+library(shinydashboard)
+library(shinyWidgets)
+library(reshape)
 
 
 data= read.csv("RI_Pubs_stats.csv")
 data1= read.csv("RI_Pubs.csv")
-data2 = read.csv("groups.csv")
 data3 = read.csv("RI.csv")
+
+pubs <-nrow(data)
+pubs <-round_any(pubs, 10)
+species <-65
+
+#modify data for groups fig
+data.g <- data1 %>%
+  select(Social, Plants, Fish, Amphibians, Reptiles, Birds, Mammals, Other) %>%
+  summarise_all(sum, na.rm=TRUE) %>%
+  pivot_longer(cols=c(Social, Plants, Fish, Amphibians, Reptiles, Birds, Mammals, Other ),
+               names_to = "Group", values_to = "Number")
 
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   
+
+  
+  # use this in non shinydashboard app
+  setBackgroundColor(color = "ghostwhite"),
+  useShinydashboard(),
+  # -----------------
+  
   # Application title
   titlePanel(title = div(img(src="Field_Logo_Blue_x1.jpg", height = 75, width = 75, position = "left"),
-                         "Measuring the Scientific Impact of Rapid Inventory Data - Publications from RI Data")),
+                         "Measuring the Scientific Impact of Rapid Inventory Data"
+             )), 
+
   
   sidebarPanel(
-    h3("> 130 publications"),
-    h3("> 65 new species described"),
-    plotOutput("distPlot"),
+
+    # Dynamic valueBoxes
+    valueBoxOutput("pubsBox", width=12),
+    valueBoxOutput("spBox", width=12),
+
+  downloadButton("downloadData", "Download table"),
+    h1(" ")),
+
     
-    #Button
-    downloadButton("downloadData", "Download table")
-  ),
-  
+
 
   
   # Main panel for displaying outputs ----
   mainPanel(
-    
+
+
+
     # Output: Tabset w/ plot, summary, and table ----
     tabsetPanel(type = "tabs",
+                tabPanel("All", plotOutput("distPlot")),
                 tabPanel("Taxonomic group", plotOutput("plot1")),
                 tabPanel("RI", plotOutput("plot2")))),
-                
-  
+
   
   basicPage(
-    DT::dataTableOutput("mytable"))
-  )
+
+    #Button
+  # downloadButton("downloadData", "Download table"),
+   DT::dataTableOutput("mytable"))) 
+                       
+  
 
 
 
 # Define a server for the Shiny app
 server <-function(input, output) {
+  #valueboxes
+  output$pubsBox <- renderValueBox({
+    valueBox(
+      paste0(">", pubs), "publications", icon = icon("list"),
+      color = "purple"
+    )
+  })
+  output$spBox <- renderValueBox({
+    valueBox(
+      paste0(">", species), "new species described", icon = icon("frog"),
+      color = "aqua"
+    )
+  })
+
+
+  #for table
+  
   data1.1 <- data1 %>%
   mutate(DOI = paste0("<a href='",data1$DOI,"' target='_blank'>",data1$DOI,"</a>"))
  
   output$mytable = DT::renderDataTable({
-  datatable(data1.1, options = list(pageLength = 50), escape = FALSE)
+  datatable(data1.1, options = list(pageLength = 10, autoWidth = TRUE, scrollX=TRUE, scrollCollapse=TRUE), escape = FALSE)
   })
   
 
@@ -75,13 +123,13 @@ server <-function(input, output) {
     
     # cumulative plot
     ggplot(data)   +
-      geom_point(aes(x=Year, y=cumulative, colour = "black")) + 
-      geom_line(aes(x=Year, y=cumulative, colour = "black"))+
+      geom_point(aes(x=Year, y=cumulative, colour="black"), size=4) + 
+      geom_line(aes(x=Year, y=cumulative, colour="black"), size=1.2)+
       geom_bar(data = data, aes(x=Year), stat = "count",
                fill="black", 
                alpha = .8)+
       scale_color_identity(name = "",
-                           breaks = c("black"),
+                           breaks = c("orange"),
                            labels = c("Cumulative publications"),
                            guide = "legend")+
       labs(x="Year", y="Count")+
@@ -103,25 +151,17 @@ server <-function(input, output) {
       scale_x_continuous(breaks=seq (2000,2020, by =2)
       )+
       scale_y_continuous(breaks = seq(0, 130, by = 20))+
-      ggtitle("All Publications")
+      ggtitle("All Publications")+
+      theme(plot.title = element_text(size = 18))
     
     
   }) 
 
   
   #Group plot
-  
-  #modify data for groups fig
-  data.g <- data1 %>%
-    select(Social, Plants, Fish, Amphibians, Reptiles, Birds, Mammals, Other) %>%
-    summarise_all(sum, na.rm=TRUE) %>%
-    pivot_longer(cols=c(Social, Plants, Fish, Amphibians, Reptiles, Birds, Mammals, Other ),
-                 names_to = "Group", values_to = "Number")
-
-
-  output$plot1 <-
+    output$plot1 <-
     renderPlot({
-      #data3$RI=as.factor(data3$RI)
+      data3$RI=as.factor(data3$RI)
       legend_ord <- levels(with(data.g, reorder(Group, -Number)))
       ggplot(data = data.g, aes(x=reorder(Group, -Number, sum), y = Number))   +
         geom_bar(stat = "identity",
@@ -146,7 +186,7 @@ server <-function(input, output) {
           legend.title=element_text(size=18),
           legend.text=element_text(size=14) 
         )+
-        expand_limits(y = max(data2$Number * 1.05))+ #auto set so that bar labels don't get cutoff
+        expand_limits(y = max(data.g$Number * 1.05))+ #auto set so that bar labels don't get cutoff
         ggtitle("Number of publications by taxonomic group")+
         theme(plot.title = element_text(size = 18))
     })
