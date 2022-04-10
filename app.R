@@ -15,7 +15,7 @@ data1= read.csv("RI_Pubs.csv")
 data3 = read.csv("RI.csv")
 
 pubs <-nrow(data)
-pubs <-round_any(pubs, 10)
+pubs <-round_any(pubs, 5, f = floor)
 species <-65
 
 #modify data for groups fig
@@ -49,7 +49,9 @@ ui <- fluidPage(
     valueBoxOutput("spBox", width=12),
 
   downloadButton("downloadData", "Download table"),
-    h1(" ")),
+    h1(" "),
+    h5("This is a database of publications that have resulted from Rapid Inventory data (in addition to the RI reports)"),
+    h5("Click on tabs 'All', 'Subject group', and 'RI' to explore different figures")),
 
     
 
@@ -63,7 +65,7 @@ ui <- fluidPage(
     # Output: Tabset w/ plot, summary, and table ----
     tabsetPanel(type = "tabs",
                 tabPanel("All", plotOutput("distPlot")),
-                tabPanel("Taxonomic group", plotOutput("plot1")),
+                tabPanel("Subject group", plotOutput("plot1")),
                 tabPanel("RI", plotOutput("plot2")))),
 
   
@@ -100,7 +102,7 @@ server <-function(input, output) {
   mutate(DOI = paste0("<a href='",data1$DOI,"' target='_blank'>",data1$DOI,"</a>"))
  
   output$mytable = DT::renderDataTable({
-  datatable(data1.1, options = list(pageLength = 10, autoWidth = TRUE, scrollX=TRUE, scrollCollapse=TRUE), escape = FALSE)
+  datatable(data1.1, options = list(pageLength = 25, autoWidth = TRUE, scrollX=TRUE, scrollCollapse=TRUE), escape = FALSE)
   })
   
 
@@ -129,7 +131,7 @@ server <-function(input, output) {
                fill="black", 
                alpha = .8)+
       scale_color_identity(name = "",
-                           breaks = c("orange"),
+                           breaks = c("black"),
                            labels = c("Cumulative publications"),
                            guide = "legend")+
       labs(x="Year", y="Count")+
@@ -148,9 +150,9 @@ server <-function(input, output) {
         legend.text=element_text(size=14), 
         legend.position ="bottom"
       )+
-      scale_x_continuous(breaks=seq (2000,2020, by =2)
+      scale_x_continuous(breaks=seq (2000,2022, by =2)
       )+
-      scale_y_continuous(breaks = seq(0, 130, by = 20))+
+      scale_y_continuous(breaks = seq(0, 140, by = 20))+
       ggtitle("All Publications")+
       theme(plot.title = element_text(size = 18))
     
@@ -187,7 +189,7 @@ server <-function(input, output) {
           legend.text=element_text(size=14) 
         )+
         expand_limits(y = max(data.g$Number * 1.05))+ #auto set so that bar labels don't get cutoff
-        ggtitle("Number of publications by taxonomic group")+
+        ggtitle("Number of publications by subject group")+
         theme(plot.title = element_text(size = 18))
     })
   
